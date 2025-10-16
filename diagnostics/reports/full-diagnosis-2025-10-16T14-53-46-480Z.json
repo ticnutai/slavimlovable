@@ -1,0 +1,92 @@
+{
+  "timestamp": "2025-10-16T14:53:43.104Z",
+  "phases": [
+    {
+      "timestamp": "2025-10-16T14:53:43.575Z",
+      "phase": 1,
+      "title": "בדיקת חיבור Supabase",
+      "tests": [
+        {
+          "name": "VITE_SUPABASE_URL",
+          "status": "pass",
+          "message": "URL תקין: https://obypfqfghztvaefxnpgb.supabase.co",
+          "details": null,
+          "timestamp": "2025-10-16T14:53:43.577Z"
+        },
+        {
+          "name": "VITE_SUPABASE_PUBLISHABLE_KEY",
+          "status": "pass",
+          "message": "מפתח ציבורי נמצא (anon key)",
+          "details": null,
+          "timestamp": "2025-10-16T14:53:43.577Z"
+        },
+        {
+          "name": "SUPABASE_SERVICE_ROLE_KEY",
+          "status": "pass",
+          "message": "מפתח service role נמצא",
+          "details": null,
+          "timestamp": "2025-10-16T14:53:43.577Z"
+        },
+        {
+          "name": "יצירת Client",
+          "status": "pass",
+          "message": "Supabase client נוצר בהצלחה",
+          "details": null,
+          "timestamp": "2025-10-16T14:53:43.782Z"
+        },
+        {
+          "name": "חיבור רשת",
+          "status": "warning",
+          "message": "השרת מגיב אך יש שגיאה",
+          "details": {
+            "error": "Could not find the table 'public._health_check_dummy_' in the schema cache",
+            "duration": "1160ms"
+          },
+          "timestamp": "2025-10-16T14:53:44.942Z"
+        },
+        {
+          "name": "טבלאות במסד נתונים",
+          "status": "pass",
+          "message": "נמצאו 5 טבלאות: users, profiles, projects, tasks, reminders",
+          "details": null,
+          "timestamp": "2025-10-16T14:53:46.180Z"
+        },
+        {
+          "name": "מערכת אימות",
+          "status": "pass",
+          "message": "אין session (זה תקין לבדיקה)",
+          "details": null,
+          "timestamp": "2025-10-16T14:53:46.181Z"
+        }
+      ],
+      "summary": {
+        "total": 7,
+        "passed": 6,
+        "failed": 0,
+        "warnings": 1
+      },
+      "success": true,
+      "canProceedToPhase2": true
+    },
+    {
+      "phase": 2,
+      "title": "בדיקת HTML",
+      "status": "manual_check_required",
+      "htmlPath": "C:\\Users\\jj121\\Desktop\\slavimlovable\\diagnostics\\test-html-generated.html",
+      "instructions": "פתח את הקובץ בדפדפן לבדיקה ידנית"
+    }
+  ],
+  "overallSuccess": true,
+  "recommendations": [
+    {
+      "priority": "medium",
+      "title": "יש 1 אזהרות",
+      "action": "עיין בדוח המפורט לפרטים נוספים"
+    },
+    {
+      "priority": "info",
+      "title": "✅ כל הבדיקות עברו בהצלחה",
+      "action": "המערכת תקינה! אם יש בעיות באפליקציה, הן לא קשורות לחיבור Supabase"
+    }
+  ]
+}

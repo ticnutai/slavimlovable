@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>בדיקת Supabase - HTML פשוט</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .status.loading {
+            background: #fff3cd;
+            color: #856404;
+            border: 2px solid #ffc107;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #28a745;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #dc3545;
+        }
+        
+        .test-result {
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border-right: 4px solid #ddd;
+        }
+        
+        .test-result.pass {
+            background: #f0f9ff;
+            border-right-color: #28a745;
+        }
+        
+        .test-result.fail {
+            background: #fff5f5;
+            border-right-color: #dc3545;
+        }
+        
+        .test-result.warning {
+            background: #fffef0;
+            border-right-color: #ffc107;
+        }
+        
+        .test-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .test-message {
+            color: #666;
+            font-size: 0.95em;
+        }
+        
+        .test-details {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            direction: ltr;
+            text-align: left;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 20px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .summary-card {
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .summary-card.passed {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .summary-card.failed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .summary-card.warnings {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .summary-card.total {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .summary-number {
+            font-size: 2em;
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .spinner {
+            border: 3px solid rgba(0, 0, 0, 0.1);
+            border-right-color: #667eea;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .icon {
+            font-size: 1.3em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 בדיקת Supabase - שלב 2</h1>
+        <p class="subtitle">בדיקת חיבור ישיר מ-HTML פשוט</p>
+        
+        <div id="status" class="status loading">
+            <div class="spinner"></div>
+            <span>טוען Supabase SDK...</span>
+        </div>
+        
+        <div id="results"></div>
+        
+        <div id="summary" class="summary" style="display: none;"></div>
+        
+        <button id="retest" onclick="runTests()" style="display: none;">
+            הרץ בדיקות שוב
+        </button>
+    </div>
+
+    <!-- טען Supabase SDK מ-CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script>
+        // משתני סביבה (ייקראו מ-.env בשלב הבא)
+        const SUPABASE_URL = 'https://obypfqfghztvaefxnpgb.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ieXBmcWZnaHp0dmFlZnhucGdiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1OTMyMDIsImV4cCI6MjA3NjE2OTIwMn0.oCnGo60KrEHfUs3Z3nC8tHI-_8xhpF02ChgpckshM-I';
+        
+        const results = {
+            timestamp: new Date().toISOString(),
+            phase: 2,
+            title: 'בדיקת HTML פשוט',
+            tests: [],
+            summary: {
+                total: 0,
+                passed: 0,
+                failed: 0,
+                warnings: 0
+            }
+        };
+        
+        function addTest(name, status, message, details = null) {
+            results.tests.push({ name, status, message, details });
+            results.summary.total++;
+            if (status === 'pass') results.summary.passed++;
+            if (status === 'fail') results.summary.failed++;
+            if (status === 'warning') results.summary.warnings++;
+            
+            displayTest(name, status, message, details);
+        }
+        
+        function displayTest(name, status, message, details) {
+            const resultsDiv = document.getElementById('results');
+            const testDiv = document.createElement('div');
+            testDiv.className = `test-result ${status}`;
+            
+            const icon = status === 'pass' ? '✅' : status === 'fail' ? '❌' : '⚠️';
+            
+            let html = `
+                <div class="test-name">
+                    <span class="icon">${icon}</span>
+                    <span>${name}</span>
+                </div>
+                <div class="test-message">${message}</div>
+            `;
+            
+            if (details) {
+                html += `<div class="test-details">${JSON.stringify(details, null, 2)}</div>`;
+            }
+            
+            testDiv.innerHTML = html;
+            resultsDiv.appendChild(testDiv);
+        }
+        
+        function updateStatus(message, type = 'loading') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = `status ${type}`;
+            
+            const icon = type === 'loading' ? '<div class="spinner"></div>' :
+                        type === 'success' ? '<span class="icon">✅</span>' :
+                        '<span class="icon">❌</span>';
+            
+            statusDiv.innerHTML = `${icon}<span>${message}</span>`;
+        }
+        
+        function showSummary() {
+            const summaryDiv = document.getElementById('summary');
+            summaryDiv.style.display = 'grid';
+            summaryDiv.innerHTML = `
+                <div class="summary-card passed">
+                    <span class="summary-number">${results.summary.passed}</span>
+                    <span>הצליחו</span>
+                </div>
+                <div class="summary-card failed">
+                    <span class="summary-number">${results.summary.failed}</span>
+                    <span>נכשלו</span>
+                </div>
+                <div class="summary-card warnings">
+                    <span class="summary-number">${results.summary.warnings}</span>
+                    <span>אזהרות</span>
+                </div>
+                <div class="summary-card total">
+                    <span class="summary-number">${results.summary.total}</span>
+                    <span>סה"כ</span>
+                </div>
+            `;
+            
+            document.getElementById('retest').style.display = 'block';
+        }
+        
+        async function runTests() {
+            // איפוס
+            document.getElementById('results').innerHTML = '';
+            document.getElementById('summary').style.display = 'none';
+            document.getElementById('retest').style.display = 'none';
+            results.tests = [];
+            results.summary = { total: 0, passed: 0, failed: 0, warnings: 0 };
+            
+            updateStatus('מתחיל בדיקות...', 'loading');
+            
+            // בדיקה 1: SDK נטען
+            if (typeof window.supabase === 'undefined') {
+                addTest(
+                    'טעינת Supabase SDK',
+                    'fail',
+                    'Supabase SDK לא נטען מ-CDN',
+                    'בדוק חיבור אינטרנט או שה-CDN זמין'
+                );
+                updateStatus('נכשל לטעון Supabase SDK', 'error');
+                showSummary();
+                return;
+            }
+            
+            addTest(
+                'טעינת Supabase SDK',
+                'pass',
+                'Supabase SDK נטען בהצלחה מ-CDN'
+            );
+            
+            // בדיקה 2: משתני סביבה
+            if (SUPABASE_URL.includes('PLACEHOLDER') || SUPABASE_KEY.includes('PLACEHOLDER')) {
+                addTest(
+                    'משתני סביבה',
+                    'fail',
+                    'משתני סביבה לא הוחלפו',
+                    'יש להריץ את הסקריפט generate-html-test.js'
+                );
+                updateStatus('משתני סביבה חסרים', 'error');
+                showSummary();
+                return;
+            }
+            
+            addTest(
+                'משתני סביבה',
+                'pass',
+                'URL ו-Key נמצאו'
+            );
+            
+            // בדיקה 3: יצירת client
+            let supabase;
+            try {
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                addTest(
+                    'יצירת Supabase Client',
+                    'pass',
+                    'Client נוצר בהצלחה'
+                );
+            } catch (error) {
+                addTest(
+                    'יצירת Supabase Client',
+                    'fail',
+                    'נכשל ליצור client',
+                    { error: error.message }
+                );
+                updateStatus('נכשל ליצור Supabase client', 'error');
+                showSummary();
+                return;
+            }
+            
+            // בדיקה 4: חיבור רשת
+            try {
+                const startTime = Date.now();
+                const { data, error } = await supabase
+                    .from('_test_table_')
+                    .select('*')
+                    .limit(1);
+                
+                const duration = Date.now() - startTime;
+                
+                if (error && error.message.includes('does not exist')) {
+                    addTest(
+                        'חיבור רשת ל-Supabase',
+                        'pass',
+                        `חיבור הצליח! (${duration}ms)`,
+                        'השרת מגיב - הטבלה לא קיימת (זה תקין)'
+                    );
+                } else if (error) {
+                    if (error.message.includes('Failed to fetch')) {
+                        addTest(
+                            'חיבור רשת ל-Supabase',
+                            'fail',
+                            'נכשל להתחבר - בעיית רשת',
+                            { error: error.message }
+                        );
+                    } else if (error.message.includes('JWT') || error.message.includes('apikey')) {
+                        addTest(
+                            'חיבור רשת ל-Supabase',
+                            'fail',
+                            'מפתח API לא תקין',
+                            { error: error.message }
+                        );
+                    } else {
+                        addTest(
+                            'חיבור רשת ל-Supabase',
+                            'warning',
+                            'חיבור הצליח אך יש שגיאה',
+                            { error: error.message, duration: `${duration}ms` }
+                        );
+                    }
+                } else {
+                    addTest(
+                        'חיבור רשת ל-Supabase',
+                        'pass',
+                        `חיבור מלא הצליח! (${duration}ms)`
+                    );
+                }
+            } catch (error) {
+                addTest(
+                    'חיבור רשת ל-Supabase',
+                    'fail',
+                    'חריג לא צפוי',
+                    { error: error.message, stack: error.stack }
+                );
+            }
+            
+            // בדיקה 5: Auth API
+            try {
+                const { data, error } = await supabase.auth.getSession();
+                if (error) {
+                    addTest(
+                        'Auth API',
+                        'warning',
+                        'לא ניתן לבדוק session',
+                        { error: error.message }
+                    );
+                } else {
+                    addTest(
+                        'Auth API',
+                        'pass',
+                        data.session ? 'יש session פעיל' : 'אין session (תקין)'
+                    );
+                }
+            } catch (error) {
+                addTest(
+                    'Auth API',
+                    'fail',
+                    'שגיאה במערכת אימות',
+                    { error: error.message }
+                );
+            }
+            
+            // סיכום
+            const allPassed = results.summary.failed === 0;
+            if (allPassed) {
+                updateStatus('✅ כל הבדיקות עברו בהצלחה!', 'success');
+            } else {
+                updateStatus(`❌ ${results.summary.failed} בדיקות נכשלו`, 'error');
+            }
+            
+            showSummary();
+            
+            // שמור תוצאות ב-localStorage
+            localStorage.setItem('supabase_test_results', JSON.stringify(results));
+            console.log('תוצאות נשמרו ב-localStorage');
+            console.log('לצפייה: localStorage.getItem("supabase_test_results")');
+        }
+        
+        // הרץ אוטומטית כשהדף נטען
+        window.addEventListener('load', () => {
+            setTimeout(runTests, 500);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+{
+  "timestamp": "2025-10-16T16:16:01.393Z",
+  "phase": 1,
+  "title": "בדיקת חיבור Supabase",
+  "tests": [
+    {
+      "name": "VITE_SUPABASE_URL",
+      "status": "pass",
+      "message": "URL תקין: https://obypfqfghztvaefxnpgb.supabase.co",
+      "details": null,
+      "timestamp": "2025-10-16T16:16:01.402Z"
+    },
+    {
+      "name": "VITE_SUPABASE_PUBLISHABLE_KEY",
+      "status": "pass",
+      "message": "מפתח ציבורי נמצא (anon key)",
+      "details": null,
+      "timestamp": "2025-10-16T16:16:01.402Z"
+    },
+    {
+      "name": "SUPABASE_SERVICE_ROLE_KEY",
+      "status": "pass",
+      "message": "מפתח service role נמצא",
+      "details": null,
+      "timestamp": "2025-10-16T16:16:01.402Z"
+    },
+    {
+      "name": "יצירת Client",
+      "status": "pass",
+      "message": "Supabase client נוצר בהצלחה",
+      "details": null,
+      "timestamp": "2025-10-16T16:16:01.457Z"
+    },
+    {
+      "name": "חיבור רשת",
+      "status": "warning",
+      "message": "השרת מגיב אך יש שגיאה",
+      "details": {
+        "error": "Could not find the table 'public._health_check_dummy_' in the schema cache",
+        "duration": "1362ms"
+      },
+      "timestamp": "2025-10-16T16:16:02.820Z"
+    },
+    {
+      "name": "טבלאות במסד נתונים",
+      "status": "pass",
+      "message": "נמצאו 5 טבלאות: users, profiles, projects, tasks, reminders",
+      "details": null,
+      "timestamp": "2025-10-16T16:16:04.356Z"
+    },
+    {
+      "name": "מערכת אימות",
+      "status": "pass",
+      "message": "אין session (זה תקין לבדיקה)",
+      "details": null,
+      "timestamp": "2025-10-16T16:16:04.357Z"
+    }
+  ],
+  "summary": {
+    "total": 7,
+    "passed": 6,
+    "failed": 0,
+    "warnings": 1
+  },
+  "success": true,
+  "canProceedToPhase2": true
+}
