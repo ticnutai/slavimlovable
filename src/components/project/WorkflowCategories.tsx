@@ -92,6 +92,8 @@ export const WorkflowCategories = ({ projectId }: WorkflowCategoriesProps) => {
   const [notesDialogOpen, setNotesDialogOpen] = useState(false);
   const [categoryManagementOpen, setCategoryManagementOpen] = useState(false);
   const [taskManagementOpen, setTaskManagementOpen] = useState(false);
+  const [editTaskDialogOpen, setEditTaskDialogOpen] = useState(false);
+  const [selectedTaskForEdit, setSelectedTaskForEdit] = useState<Task | null>(null);
   const [reminderDialogOpen, setReminderDialogOpen] = useState(false);
   const [selectedTaskForReminder, setSelectedTaskForReminder] = useState<{
     projectTaskId: string;
@@ -217,6 +219,70 @@ export const WorkflowCategories = ({ projectId }: WorkflowCategoriesProps) => {
     onError: (error) => {
       toast({
         title: 'שגיאה',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // Delete task mutation
+  const deleteTaskMutation = useMutation({
+    mutationFn: async (taskId: string) => {
+      // First, delete all project_tasks that reference this task
+      const { error: projectTasksError } = await supabase
+        .from('project_tasks')
+        .delete()
+        .eq('task_id', taskId);
+      
+      if (projectTasksError) throw projectTasksError;
+
+      // Then delete the task itself
+      const { error: taskError } = await supabase
+        .from('tasks')
+        .delete()
+        .eq('id', taskId);
+      
+      if (taskError) throw taskError;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['project-tasks', projectId] });
+      toast({
+        title: 'נמחק בהצלחה',
+        description: 'המשימה נמחקה מהמערכת',
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: 'שגיאה במחיקה',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // Update task mutation
+  const updateTaskMutation = useMutation({
+    mutationFn: async ({ taskId, updates }: { taskId: string; updates: Partial<Task> }) => {
+      const { error } = await supabase
+        .from('tasks')
+        .update(updates)
+        .eq('id', taskId);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      setEditTaskDialogOpen(false);
+      setSelectedTaskForEdit(null);
+      toast({
+        title: 'עודכן בהצלחה',
+        description: 'המשימה עודכנה',
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: 'שגיאה בעדכון',
         description: error.message,
         variant: 'destructive',
       });
@@ -621,11 +687,8 @@ export const WorkflowCategories = ({ projectId }: WorkflowCategoriesProps) => {
                                   size="sm"
                                   className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-primary"
                                   onClick={() => {
-                                    // TODO: Add edit task functionality
-                                    toast({
-                                      title: 'בקרוב',
-                                      description: 'עריכת משימה תהיה זמינה בקרוב',
-                                    });
+                                    setSelectedTaskForEdit(task);
+                                    setEditTaskDialogOpen(true);
                                   }}
                                   title="ערוך משימה"
                                 >
@@ -636,11 +699,9 @@ export const WorkflowCategories = ({ projectId }: WorkflowCategoriesProps) => {
                                   size="sm"
                                   className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
                                   onClick={() => {
-                                    // TODO: Add delete task functionality
-                                    toast({
-                                      title: 'בקרוב',
-                                      description: 'מחיקת משימה תהיה זמינה בקרוב',
-                                    });
+                                    if (confirm(`האם אתה בטוח שברצונך למחוק את המשימה "${task.name}"?`)) {
+                                      deleteTaskMutation.mutate(task.id);
+                                    }
                                   }}
                                   title="מחק משימה"
                                 >
@@ -1010,6 +1071,90 @@ export const WorkflowCategories = ({ projectId }: WorkflowCategoriesProps) => {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Edit Task Dialog */}
+      <Dialog open={editTaskDialogOpen} onOpenChange={setEditTaskDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>ערוך משימה</DialogTitle>
+          </DialogHeader>
+          {selectedTaskForEdit && (
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="edit-task-name" className="text-sm font-medium">שם המשימה</label>
+                <input
+                  type="text"
+                  className="w-full mt-1 px-3 py-2 border rounded-md"
+                  defaultValue={selectedTaskForEdit.name}
+                  id="edit-task-name"
+                  placeholder="הכנס שם משימה"
+                />
+              </div>
+              <div>
+                <label htmlFor="edit-task-description" className="text-sm font-medium">תיאור</label>
+                <textarea
+                  className="w-full mt-1 px-3 py-2 border rounded-md min-h-[100px]"
+                  defaultValue={selectedTaskForEdit.description || ''}
+                  id="edit-task-description"
+                  placeholder="הוסף תיאור למשימה"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  className="mt-1"
+                  defaultChecked={selectedTaskForEdit.is_required}
+                  id="edit-task-required"
+                />
+                <label htmlFor="edit-task-required" className="text-sm font-medium">חובה</label>
+              </div>
+              <div>
+                <label htmlFor="edit-task-hours" className="text-sm font-medium">שעות משוערות</label>
+                <input
+                  type="number"
+                  className="w-full mt-1 px-3 py-2 border rounded-md"
+                  defaultValue={selectedTaskForEdit.estimated_hours || ''}
+                  id="edit-task-hours"
+                  min="0"
+                  step="0.5"
+                  placeholder="מספר שעות"
+                />
+              </div>
+              <div className="flex gap-2 justify-end">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setEditTaskDialogOpen(false);
+                    setSelectedTaskForEdit(null);
+                  }}
+                >
+                  ביטול
+                </Button>
+                <Button
+                  onClick={() => {
+                    const name = (document.getElementById('edit-task-name') as HTMLInputElement).value;
+                    const description = (document.getElementById('edit-task-description') as HTMLTextAreaElement).value;
+                    const isRequired = (document.getElementById('edit-task-required') as HTMLInputElement).checked;
+                    const estimatedHours = parseFloat((document.getElementById('edit-task-hours') as HTMLInputElement).value) || null;
+
+                    updateTaskMutation.mutate({
+                      taskId: selectedTaskForEdit.id,
+                      updates: {
+                        name,
+                        description: description || null,
+                        is_required: isRequired,
+                        estimated_hours: estimatedHours,
+                      },
+                    });
+                  }}
+                >
+                  שמור שינויים
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

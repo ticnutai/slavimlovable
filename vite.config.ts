@@ -7,6 +7,12 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: true,
     port: 6500,
+    hmr: {
+      overlay: true,
+    },
+    watch: {
+      usePolling: true, // עבור Windows - מבטיח זיהוי שינויים
+    },
   },
   // Disable experimental tagging plugin to avoid interfering with React hooks
   plugins: [react()],

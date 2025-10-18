@@ -12,6 +12,18 @@ dist
 dist-ssr
 *.local
 
+# Cache directories
+.cache
+node_modules/.vite
+node_modules/.cache
+.playwright
+
+# Test results
+test-results/
+playwright-report/
+test-results.json
+test-results.xml
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
